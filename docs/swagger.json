@@ -2,7 +2,7 @@
     "swagger": "2.0",
     "info": {
         "description": "This is a sample server.",
-        "title": "Golang API",
+        "title": "To-Do List Golang API",
         "contact": {},
         "version": "1.0"
     },
@@ -21,7 +21,7 @@
                 "tags": [
                     "users"
                 ],
-                "summary": "Get list of users",
+                "summary": "Get list of users aaa",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -30,6 +30,12 @@
                             "items": {
                                 "type": "string"
                             }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }

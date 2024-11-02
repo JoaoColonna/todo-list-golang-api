@@ -27,7 +27,7 @@ const docTemplate = `{
                 "tags": [
                     "users"
                 ],
-                "summary": "Get list of users",
+                "summary": "Get list of users aaa",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -36,6 +36,12 @@ const docTemplate = `{
                             "items": {
                                 "type": "string"
                             }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -50,7 +56,7 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8080",
 	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "Golang API",
+	Title:            "To-Do List Golang API",
 	Description:      "This is a sample server.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

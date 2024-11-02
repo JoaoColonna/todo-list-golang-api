@@ -1,10 +1,10 @@
 package main
 
 import (
-    "log"
-    "golang_api/pkg/config"
-    "golang_api/pkg/routes"
-    _ "golang_api/docs"
+	_ "golang_api/docs"
+	"golang_api/pkg/config"
+	"golang_api/pkg/routes"
+	"log"
 )
 
 // @title To-Do List Golang API
@@ -13,10 +13,10 @@ import (
 // @host localhost:8080
 // @BasePath /
 func main() {
-    cfg := config.LoadConfig()
-    r := routes.SetupRouter()
-    log.Println("Iniciando servidor na porta:", cfg.Port)
-    if err := r.Run(":" + cfg.Port); err != nil {
-        log.Fatal(err)
-    }
+	cfg := config.LoadConfig()
+	r := routes.SetupRouter()
+	log.Println("Iniciando servidor na porta:", cfg.Port)
+	if err := r.Run(":" + cfg.Port); err != nil {
+		log.Fatal(err)
+	}
 }
