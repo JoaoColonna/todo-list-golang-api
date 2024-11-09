@@ -3,8 +3,6 @@ package database
 import (
     "context"
     "log"
-
-    "github.com/jackc/pgx/v5"
     "github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -12,9 +10,16 @@ var dbPool *pgxpool.Pool
 
 func Connect() {
     var err error
-    databaseUrl := "postgres://username:password@localhost:5432/mydatabase"
+    databaseUrl := "postgresql://postgres.qbyxzucfcjuvzyeahthc:todolist0211A!@aws-0-sa-east-1.pooler.supabase.com:6543/postgres"
 
-    dbPool, err = pgxpool.New(context.Background(), databaseUrl)
+    // Parse a configuração do banco de dados
+    config, err := pgxpool.ParseConfig(databaseUrl)
+    if err != nil {
+        log.Fatalf("Unable to parse database URL: %v\n", err)
+    }
+
+    // Cria o pool de conexões
+    dbPool, err = pgxpool.NewWithConfig(context.Background(), config)
     if err != nil {
         log.Fatalf("Unable to connect to database: %v\n", err)
     }
