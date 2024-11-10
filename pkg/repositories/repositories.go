@@ -10,6 +10,10 @@ import (
 // TaskRepository representa o repositório para operações com tarefas
 type TaskRepository struct{}
 type User struct{}
+type Category struct{}
+type Task_category struct{}
+type Task_status struct{}
+type Task_priority struct{}
 
 // NewTaskRepository cria uma nova instância do repositório de tarefas
 func NewTaskRepository() *TaskRepository {
@@ -100,19 +104,19 @@ func (r *User) Select(userId int) (*models.Tb_User, error) {
 	return &user, nil
 }
 
-// Insert insere uma nova tarefa no banco de dados usando um modelo Tb_Task
+// Insert, Update, Delete de tarefas
 func (r *TaskRepository) Insert(task *models.Tb_Task) error {
     db := database.GetDB()
     
     query := `
         INSERT INTO tb_task (
             tsk_name, tsk_description, tsk_creation_date, tsk_update_date,
-            tsk_deadline_date, tsk_color, tskpr_id, tskst_id
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            tsk_deadline_date, tsk_color, tskpr_id, tskst_id, $usr_id
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING tsk_id
     `
     
-    _, err := db.Exec(context.Background(), query, task.Tsk_name, task.Tsk_description, task.Tsk_creation_date, task.Tsk_update_date, task.Tsk_deadline_date, task.Tsk_color, task.Tskpr_id, task.Tskst_id)
+    _, err := db.Exec(context.Background(), query, task.Tsk_name, task.Tsk_description, task.Tsk_creation_date, task.Tsk_update_date, task.Tsk_deadline_date, task.Tsk_color, task.Tskpr_id, task.Tskst_id, task.Usr_id)
     if err != nil {
         log.Printf("Erro ao inserir tarefa: %v", err)
         return err
@@ -120,4 +124,279 @@ func (r *TaskRepository) Insert(task *models.Tb_Task) error {
 
     log.Printf("Tarefa inserida com sucesso com ID %d\n", task.Tsk_id)
     return nil
+}
+
+func (r *TaskRepository) Update(task *models.Tb_Task) error {
+	db := database.GetDB()
+
+	query := `
+		UPDATE tb_task SET
+			tsk_name = $1,
+			tsk_description = $2,
+			tsk_update_date = $3
+			tsk_deadline_date = $4
+			tsk_color = $5
+			tskpr_id = $6
+			tskst_id = $7
+			usr_id = $8
+		WHERE tsk_id = $9
+	`
+
+	_, err := db.Exec(context.Background(), query, task.Tsk_name, task.Tsk_description, task.Tsk_update_date, task.Tsk_deadline_date, task.Tsk_color, task.Tskpr_id, task.Tskst_id, task.Usr_id)
+	if err != nil {
+		log.Printf("Erro ao atualizar os dados da tarefa: %v", err)
+		return err
+	}
+
+	log.Printf("Dados da tarefa atualizados com sucesso %d\n", task.Tsk_id)
+	return nil
+}
+
+func (r *TaskRepository) Delete(task *models.Tb_Task) error {
+	db := database.GetDB()
+
+	query := `
+		DELETE FROM tb_task
+		WHERE tsk_id =$1
+	`
+
+	_, err := db.Exec(context.Background(), query, task.Tsk_id)
+	if err != nil {
+		log.Printf("Erro ao deletar a tarefa %v", err)
+		return err
+	}
+
+	log.Printf("Tarefa deletada com sucesso %d\n", task.Tsk_id)
+	return nil
+}
+
+func (r *TaskRepository) Select(taskId int) (*models.Tb_Task, error) {
+	db := database.GetDB()
+
+	query := `SELECT tsk_id, tsk_name, tsk_description, tsk_creation_date, tsk_update_date, tsk_deadline_date, tsk_color, tskpr_id, tskst_id, usr_id FROM tb_user WHERE tsk_id = $1`
+
+	var task models.Tb_Task
+
+	err := db.QueryRow(context.Background(), query, taskId).Scan(
+		&task.Tsk_id,
+		&task.Tsk_name,
+		&task.Tsk_description,
+		&task.Tsk_creation_date,
+		&task.Tsk_update_date,
+		&task.tsk_deadline_date,
+		&task.tsk_color,
+		&task.tskpr_id,
+		&task.tskst_id,
+		&task.usr_id,
+	)
+	if err != nil {
+		log.Printf("Erro ao selecionar a tarefa %v", err)
+		return nil, err
+	}
+
+	log.Printf("Tarefa selecionada com sucesso %v", task)
+	return &task, nil
+}
+
+// Insert, Update, Delete de Categorias
+
+func (r *Category) Insert(category *models.Tb_Category) error {
+	db := database.GetDB()
+
+	query := `
+		INSERT INTO tb_category (
+			cat_name, usr_id
+		) VALUES ($1, $2)
+		RETURNING cat_id
+	`
+	_, err := db.Exec(context.Background(), query, category.Cat_name, category.Usr_id)
+	if err != nil {
+		log.Printf("Erro ao inserir categoria: %v", err)
+		return err
+	}
+
+	log.Printf("Categoria inserido com sucesso %d\n", category.cat_id)
+	return nil
+}
+
+func (r *Category) Update(category *models.Tb_Category) error {
+	db := database.GetDB()
+
+	query := `
+		UPDATE tb_category SET
+			cat_name = $1,
+			usr_id = $2,
+		WHERE cat_id = $3
+	`
+
+	_, err := db.Exec(context.Background(), query, category.Cat_name, category.Usr_id)
+	if err != nil {
+		log.Printf("Erro ao atualizar os dados da categoria: %v", err)
+		return err
+	}
+
+	log.Printf("Dados da categoria atualizados com sucesso %d\n", category.Cat_id)
+	return nil
+}
+
+func (r *Category) Delete(category *models.Tb_Category) error {
+	db := database.GetDB()
+
+	query := `
+		DELETE FROM tb_category
+		WHERE cat_id =$1
+	`
+
+	_, err := db.Exec(context.Background(), query, category.Cat_id)
+	if err != nil {
+		log.Printf("Erro ao deletar a categoria %v", err)
+		return err
+	}
+
+	log.Printf("Categoria deletada com sucesso %d\n", category.Cat_id)
+	return nil
+}
+
+func (r *Category) Select(Cat_id int) (*models.Tb_Category, error) {
+	db := database.GetDB()
+
+	query := `SELECT cat_id, cat_name, usr_id FROM tb_category WHERE cat_id = $1`
+
+	var category models.Tb_Category
+
+	err := db.QueryRow(context.Background(), query, Cat_id).Scan(
+		&category.Cat_id,
+		&category.Cat_name,
+		&category.Usr_id,
+	)
+	if err != nil {
+		log.Printf("Erro ao selecionar a categoria %v", err)
+		return nil, err
+	}
+
+	log.Printf("Categoria selecionada com sucesso %v", category)
+	return &category, nil
+}
+
+// Insert, Update, Delete de tarefas e categorias
+
+func (r *Task_category) Insert(task_category *models.Tb_Task_category) error {
+	db := database.GetDB()
+
+	query := `
+		INSERT INTO tb_task_category (
+			tsk_id, cat_id
+		) VALUES ($1, $2)
+		RETURNING tsk_id, cat_id
+	`
+	_, err := db.Exec(context.Background(), query, task_category.Tsk_id, task_category.Cat_id)
+	if err != nil {
+		log.Printf("Erro ao inserir tarefas e categorias: %v", err)
+		return err
+	}
+
+	log.Printf("Tarefas e categorias inserido com sucesso %d\n", task_category.tsk_id ,task_category.cat_id)
+	return nil
+}
+
+func (r *Task_category) Update(task_category *models.Tb_Task_category) error {
+	db := database.GetDB()
+
+	query := `
+		UPDATE tb_task_category SET
+			tsk_id = $1,
+			cat_id = $2,
+		WHERE tsk_id = $3 and cat_id = $4
+	`
+
+	_, err := db.Exec(context.Background(), query, task_category.Tsk_id, task_category.Cat_id)
+	if err != nil {
+		log.Printf("Erro ao atualizar os dados das tarefas e categorias: %v", err)
+		return err
+	}
+
+	log.Printf("Dados das tarefas e categorias atualizados com sucesso %d\n", task_category.tsk_id, task_category.Cat_id)
+	return nil
+}
+
+func (r *Task_category) Delete(task_category *models.Tb_Task_category) error {
+	db := database.GetDB()
+
+	query := `
+		DELETE FROM tb_task_category
+		WHERE tsk_id = $1 and cat_id = $2
+	`
+
+	_, err := db.Exec(context.Background(), query, task_category.tsk_id ,task_category.Cat_id)
+	if err != nil {
+		log.Printf("Erro ao deletar as  tarefas e categorias %v", err)
+		return err
+	}
+
+	log.Printf("Tarefas e categorias deletadas com sucesso %d\n", task_category.tsk_id ,task_category.Cat_id)
+	return nil
+}
+
+func (r *Task_category) Select(Tsk_id int, Cat_id int) (*models.Tb_Task_category, error) {
+	db := database.GetDB()
+
+	query := `SELECT tsk_id, cat_id FROM tb_task_category WHERE tsk_id = $1 and cat_id = $2`
+
+	var task_category models.Tb_Task_category
+
+	err := db.QueryRow(context.Background(), query, Cat_id).Scan(
+		&task_category.tsk_id,
+		&task_category.cat_id,
+	)
+	if err != nil {
+		log.Printf("Erro ao selecionar as tarefas e categorias %v", err)
+		return nil, err
+	}
+
+	log.Printf("Tarefas e categorias selecionadas com sucesso %v", task_category)
+	return &category, nil
+}
+
+// Select de status
+
+func (r *Task_status) Select(Tskst_id int) (*models.Tb_Task_status, error) {
+	db := database.GetDB()
+
+	query := `SELECT tskst_id, tskst_name FROM tb_task_status WHERE tskst_id = $1`
+
+	var task_status models.Tb_Task_status
+
+	err := db.QueryRow(context.Background(), query, Cat_id).Scan(
+		&task_status.Tskst_id,
+		&task_status.Tskst_name,
+	)
+	if err != nil {
+		log.Printf("Erro ao selecionar status %v", err)
+		return nil, err
+	}
+
+	log.Printf("Status selecionado com sucesso %v", task_status)
+	return &task_status, nil
+}
+
+// Select de prioridade
+
+func (r *Task_priority) Select(Tskpr_id int) (*models.Tb_Task_priority, error) {
+	db := database.GetDB()
+
+	query := `SELECT tskpr_id, tskpr_name FROM tb_task_priority WHERE tskpr_id = $1`
+
+	var task_priority models.Tb_Task_priority
+
+	err := db.QueryRow(context.Background(), query, Cat_id).Scan(
+		&task_priority.Tskpr_id,
+		&task_priority.Tskpr_name,
+	)
+	if err != nil {
+		log.Printf("Erro ao selecionar a prioridade %v", err)
+		return nil, err
+	}
+
+	log.Printf("Prioridade selecionada com sucesso %v", task_priority)
+	return &task_priority, nil
 }
