@@ -18,22 +18,16 @@ jobs:
       with:
         go-version: '1.23.2'
 
-    - name: Install dependencies
-      run: go mod tidy
-
     - name: Check if swag is installed
       id: swag-check
-      run: |
-        if ! command -v swag &> /dev/null; then
-          echo "Swag not found, installing..."
-          go install github.com/swaggo/swag/cmd/swag@latest
-        else
-          echo "Swag is already installed"
-        fi
+      run: go install github.com/swaggo/swag/cmd/swag@latest
 
     - name: Generate Swagger docs
       run: swag init -g ./cmd/api/main.go
 
+    - name: Install dependencies
+      run: go mod tidy
+      
     - name: Build
       run: go build -o main ./cmd/api
 
