@@ -1,4 +1,4 @@
-name: Deploy app to Heroku
+name: Deploy to Heroku
 
 on:
   push:
@@ -37,22 +37,10 @@ jobs:
     - name: Build
       run: go build -o main ./cmd/api
 
-    - name: Setup Heroku
-      env:
-        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-      run: |
-        echo "machine api.heroku.com" > ~/.netrc
-        echo "  login ${{ secrets.HEROKU_EMAIL }}" >> ~/.netrc
-        echo "  password ${{ secrets.HEROKU_API_KEY }}" >> ~/.netrc
-        echo "machine git.heroku.com" >> ~/.netrc
-        echo "  login ${{ secrets.HEROKU_EMAIL }}" >> ~/.netrc
-        echo "  password ${{ secrets.HEROKU_API_KEY }}" >> ~/.netrc
-        heroku git:remote -a ${{ env.HEROKU_APP_NAME }}
-
     - name: Deploy to Heroku
-      env:
-        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        HEROKU_APP_NAME: todo-list-go-api
-      run: |
-        git remote add heroku https://git.heroku.com/${{ env.HEROKU_APP_NAME }}.git
-        git push heroku main
+      uses: akhileshns/heroku-deploy@v3.12.12
+      with:
+        heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+        heroku_app_name: "todo-list-go-api"
+        heroku_email: ${{ secrets.HEROKU_EMAIL }}
+        usedocker: false
