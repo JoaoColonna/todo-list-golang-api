@@ -3,10 +3,22 @@ package models
 import "time"
 
 type Tb_User struct {
-	Usr_id int `json:"usr_id"`
-	Usr_name string `json:"usr_name"`
-	Usr_email string `json:"usr_email"`
+	Usr_id       int    `json:"usr_id"`
+	Usr_name     string `json:"usr_name"`
+	Usr_email    string `json:"usr_email"`
 	Usr_password string `json:"usr_password"`
+}
+
+type UserDTO struct {
+	Usr_name     string `json:"usr_name"`
+	Usr_email    string `json:"usr_email"`
+	Usr_password string `json:"usr_password"`
+}
+
+type UserResponse struct {
+	Usr_id    int    `json:"usr_id"`
+	Usr_name  string `json:"usr_name"`
+	Usr_email string `json:"usr_email"`
 }
 
 type Tb_Task struct {
@@ -17,9 +29,9 @@ type Tb_Task struct {
 	Tsk_update_date   time.Time `json:"task_update_date"`
 	Tsk_deadline_date time.Time `json:"taks_deadline_date"`
 	Tsk_color         string    `json:"tsk_color"`
-	Usr_id int `json:"usr_id"`
-	Tskpr_id int `json:"tskpr_id"`
-	Tskst_id int `json:"tsksk_id"`
+	Usr_id            int       `json:"usr_id"`
+	Tskpr_id          int       `json:"tskpr_id"`
+	Tskst_id          int       `json:"tsksk_id"`
 }
 
 type Tb_Category struct {
@@ -34,12 +46,12 @@ type Tb_Task_category struct {
 }
 
 type Tb_Task_status struct {
-	Tskst_id int `json:"tskst_id"`
+	Tskst_id   int    `json:"tskst_id"`
 	Tskst_name string `json:"tskst_name"`
 }
 
 type Tb_Task_priority struct {
-	Tskpr_id int `json:"tskpr_id"`
+	Tskpr_id   int    `json:"tskpr_id"`
 	Tskpr_name string `json:"tskpr_name"`
 }
 

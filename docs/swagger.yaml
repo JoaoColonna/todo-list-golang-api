@@ -1,4 +1,30 @@
 basePath: /
+definitions:
+  models.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  models.UserDTO:
+    properties:
+      usr_email:
+        type: string
+      usr_name:
+        type: string
+      usr_password:
+        type: string
+    type: object
+  models.UserResponse:
+    properties:
+      usr_email:
+        type: string
+      usr_id:
+        type: integer
+      usr_name:
+        type: string
+    type: object
+  repositories.User:
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -6,11 +32,74 @@ info:
   title: To-Do List Golang API
   version: "1.0"
 paths:
+  /user:
+    post:
+      consumes:
+      - application/json
+      description: CreateUser creates a new user
+      parameters:
+      - description: User DTO
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Create a new user
+      tags:
+      - users
+  /user/{user_id}:
+    get:
+      consumes:
+      - application/json
+      description: GetUser returns a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/repositories.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get user by ID
+      tags:
+      - users
   /users:
     get:
       consumes:
       - application/json
-      description: GetUsers returns a list of users
+      description: GetUsers returns all users
       produces:
       - application/json
       responses:
@@ -18,13 +107,13 @@ paths:
           description: OK
           schema:
             items:
-              type: string
+              $ref: '#/definitions/repositories.User'
             type: array
         "500":
           description: Internal Server Error
           schema:
-            type: string
-      summary: Get list of users aaa
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get all users
       tags:
       - users
 swagger: "2.0"

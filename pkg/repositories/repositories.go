@@ -2,9 +2,11 @@ package repositories
 
 import (
 	"context"
-	"log"
-	"golang_api/internal"
+	database "golang_api/internal"
 	"golang_api/pkg/models"
+	"log"
+
+	"github.com/jackc/pgx/v5"
 )
 
 // TaskRepository representa o repositório para operações com tarefas
@@ -17,14 +19,15 @@ type Task_priority struct{}
 
 // NewTaskRepository cria uma nova instância do repositório de tarefas
 func NewTaskRepository() *TaskRepository {
-    return &TaskRepository{}
+	return &TaskRepository{}
 }
 
 func NewUserRepository() *User {
-		return &User{}
+	return &User{}
 }
-//Insert, Update, Delete de usuários
-func (r *User) Insert(user *models.Tb_User) error {
+
+// Insert, Update, Delete de usuários
+func (r *User) Insert(user *models.Tb_User) (int, error) {
 	db := database.GetDB()
 
 	query := `
@@ -33,14 +36,15 @@ func (r *User) Insert(user *models.Tb_User) error {
 		) VALUES ($1, $2, $3)
 		RETURNING usr_id
 	`
-	_, err := db.Exec(context.Background(), query, user.Usr_name, user.Usr_email, user.Usr_password)
+	var userID int
+	err := db.QueryRow(context.Background(), query, user.Usr_name, user.Usr_email, user.Usr_password).Scan(&userID)
 	if err != nil {
 		log.Printf("Erro ao inserir usuário: %v", err)
-		return err
+		return 0, err
 	}
 
-	log.Printf("Usuário inserido com sucesso %d\n", user.Usr_id)
-	return nil
+	log.Printf("Usuário inserido com sucesso %d\n", userID)
+	return userID, nil
 }
 
 func (r *User) Update(user *models.Tb_User) error {
@@ -54,7 +58,7 @@ func (r *User) Update(user *models.Tb_User) error {
 		WHERE usr_id = $4
 	`
 
-	_, err := db.Exec(context.Background(), query, user.Usr_name, user.Usr_email, user.Usr_password, user.Usr_id)
+	_, err := db.Query(context.Background(), query, user.Usr_name, user.Usr_email, user.Usr_password, user.Usr_id)
 	if err != nil {
 		log.Printf("Erro ao atualizar os dados do usuário: %v", err)
 		return err
@@ -82,48 +86,72 @@ func (r *User) Delete(user *models.Tb_User) error {
 	return nil
 }
 
-func (r *User) Select(userId int) (*models.Tb_User, error) {
+func (r *User) Select(userId ...int) ([]*models.Tb_User, error) {
 	db := database.GetDB()
 
-	query := `SELECT usr_id, usr_name, usr_email, usr_password FROM tb_user WHERE usr_id = $1`
+	var query string
+	var rows pgx.Rows
+	var err error
 
-	var user models.Tb_User
+	if len(userId) > 0 {
+		query = `SELECT usr_id, usr_name, usr_email, usr_password FROM tb_user WHERE usr_id = $1`
+		rows, err = db.Query(context.Background(), query, userId[0])
+	} else {
+		query = `SELECT usr_id, usr_name, usr_email, usr_password FROM tb_user`
+		rows, err = db.Query(context.Background(), query)
+	}
 
-	err := db.QueryRow(context.Background(), query, userId).Scan(
-		&user.Usr_id,
-		&user.Usr_name,
-		&user.Usr_email,
-		&user.Usr_password,
-	)
 	if err != nil {
-		log.Printf("Erro ao selecionar o usuário %v", err)
+		log.Printf("Erro ao selecionar o(s) usuário(s) %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []*models.Tb_User
+	for rows.Next() {
+		var user models.Tb_User
+		err := rows.Scan(
+			&user.Usr_id,
+			&user.Usr_name,
+			&user.Usr_email,
+			&user.Usr_password,
+		)
+		if err != nil {
+			log.Printf("Erro ao escanear o usuário %v", err)
+			return nil, err
+		}
+		users = append(users, &user)
+	}
+
+	if err = rows.Err(); err != nil {
+		log.Printf("Erro ao iterar sobre as linhas %v", err)
 		return nil, err
 	}
 
-	log.Printf("Usuário selecionado com sucesso %v", user)
-	return &user, nil
+	log.Printf("Usuário(s) selecionado(s) com sucesso %v", users)
+	return users, nil
 }
 
 // Insert, Update, Delete de tarefas
 func (r *TaskRepository) Insert(task *models.Tb_Task) error {
-    db := database.GetDB()
-    
-    query := `
+	db := database.GetDB()
+
+	query := `
         INSERT INTO tb_task (
             tsk_name, tsk_description, tsk_creation_date, tsk_update_date,
             tsk_deadline_date, tsk_color, tskpr_id, tskst_id, $usr_id
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING tsk_id
     `
-    
-    _, err := db.Exec(context.Background(), query, task.Tsk_name, task.Tsk_description, task.Tsk_creation_date, task.Tsk_update_date, task.Tsk_deadline_date, task.Tsk_color, task.Tskpr_id, task.Tskst_id, task.Usr_id)
-    if err != nil {
-        log.Printf("Erro ao inserir tarefa: %v", err)
-        return err
-    }
 
-    log.Printf("Tarefa inserida com sucesso com ID %d\n", task.Tsk_id)
-    return nil
+	_, err := db.Query(context.Background(), query, task.Tsk_name, task.Tsk_description, task.Tsk_creation_date, task.Tsk_update_date, task.Tsk_deadline_date, task.Tsk_color, task.Tskpr_id, task.Tskst_id, task.Usr_id)
+	if err != nil {
+		log.Printf("Erro ao inserir tarefa: %v", err)
+		return err
+	}
+
+	log.Printf("Tarefa inserida com sucesso com ID %d\n", task.Tsk_id)
+	return nil
 }
 
 func (r *TaskRepository) Update(task *models.Tb_Task) error {
@@ -183,11 +211,11 @@ func (r *TaskRepository) Select(taskId int) (*models.Tb_Task, error) {
 		&task.Tsk_description,
 		&task.Tsk_creation_date,
 		&task.Tsk_update_date,
-		&task.tsk_deadline_date,
-		&task.tsk_color,
-		&task.tskpr_id,
-		&task.tskst_id,
-		&task.usr_id,
+		&task.Tsk_deadline_date,
+		&task.Tsk_color,
+		&task.Tskpr_id,
+		&task.Tskst_id,
+		&task.Usr_id,
 	)
 	if err != nil {
 		log.Printf("Erro ao selecionar a tarefa %v", err)
@@ -215,7 +243,7 @@ func (r *Category) Insert(category *models.Tb_Category) error {
 		return err
 	}
 
-	log.Printf("Categoria inserido com sucesso %d\n", category.cat_id)
+	log.Printf("Categoria inserido com sucesso %d\n", category.Cat_id)
 	return nil
 }
 
@@ -295,7 +323,7 @@ func (r *Task_category) Insert(task_category *models.Tb_Task_category) error {
 		return err
 	}
 
-	log.Printf("Tarefas e categorias inserido com sucesso %d\n", task_category.tsk_id ,task_category.cat_id)
+	log.Printf("Tarefas e categorias inserido com sucesso %d\n", task_category.Tsk_id, task_category.Cat_id)
 	return nil
 }
 
@@ -315,7 +343,7 @@ func (r *Task_category) Update(task_category *models.Tb_Task_category) error {
 		return err
 	}
 
-	log.Printf("Dados das tarefas e categorias atualizados com sucesso %d\n", task_category.tsk_id, task_category.Cat_id)
+	log.Printf("Dados das tarefas e categorias atualizados com sucesso %d\n", task_category.Tsk_id, task_category.Cat_id)
 	return nil
 }
 
@@ -327,13 +355,13 @@ func (r *Task_category) Delete(task_category *models.Tb_Task_category) error {
 		WHERE tsk_id = $1 and cat_id = $2
 	`
 
-	_, err := db.Exec(context.Background(), query, task_category.tsk_id ,task_category.Cat_id)
+	_, err := db.Exec(context.Background(), query, task_category.Tsk_id, task_category.Cat_id)
 	if err != nil {
 		log.Printf("Erro ao deletar as  tarefas e categorias %v", err)
 		return err
 	}
 
-	log.Printf("Tarefas e categorias deletadas com sucesso %d\n", task_category.tsk_id ,task_category.Cat_id)
+	log.Printf("Tarefas e categorias deletadas com sucesso %d\n", task_category.Tsk_id, task_category.Cat_id)
 	return nil
 }
 
@@ -345,8 +373,8 @@ func (r *Task_category) Select(Tsk_id int, Cat_id int) (*models.Tb_Task_category
 	var task_category models.Tb_Task_category
 
 	err := db.QueryRow(context.Background(), query, Cat_id).Scan(
-		&task_category.tsk_id,
-		&task_category.cat_id,
+		&task_category.Tsk_id,
+		&task_category.Cat_id,
 	)
 	if err != nil {
 		log.Printf("Erro ao selecionar as tarefas e categorias %v", err)
@@ -354,7 +382,7 @@ func (r *Task_category) Select(Tsk_id int, Cat_id int) (*models.Tb_Task_category
 	}
 
 	log.Printf("Tarefas e categorias selecionadas com sucesso %v", task_category)
-	return &category, nil
+	return &task_category, nil
 }
 
 // Select de status
@@ -366,7 +394,7 @@ func (r *Task_status) Select(Tskst_id int) (*models.Tb_Task_status, error) {
 
 	var task_status models.Tb_Task_status
 
-	err := db.QueryRow(context.Background(), query, Cat_id).Scan(
+	err := db.QueryRow(context.Background(), query, Tskst_id).Scan(
 		&task_status.Tskst_id,
 		&task_status.Tskst_name,
 	)
@@ -388,7 +416,7 @@ func (r *Task_priority) Select(Tskpr_id int) (*models.Tb_Task_priority, error) {
 
 	var task_priority models.Tb_Task_priority
 
-	err := db.QueryRow(context.Background(), query, Cat_id).Scan(
+	err := db.QueryRow(context.Background(), query, Tskpr_id).Scan(
 		&task_priority.Tskpr_id,
 		&task_priority.Tskpr_name,
 	)
