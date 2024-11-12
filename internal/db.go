@@ -15,10 +15,12 @@ var dbPool *pgxpool.Pool
 func Connect() {
 	var err error
 
-	// Carregar variáveis de ambiente do arquivo .env
-	err = godotenv.Load()
-	if err != nil {
-		log.Fatalf("Error loading .env file")
+	// Carregar variáveis de ambiente do arquivo .env apenas em desenvolvimento
+	if os.Getenv("ENV") != "production" {
+		err = godotenv.Load()
+		if err != nil {
+			log.Println("Error loading .env file")
+		}
 	}
 
 	databaseUrl := os.Getenv("DATABASE_URL")
