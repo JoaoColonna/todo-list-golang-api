@@ -21,8 +21,7 @@ import (
 
 // @title To-Do List Golang API
 // @version 1.0
-// @description This is a sample server.
-// @host localhost:8080
+// @description API RESTful em Go
 // @BasePath /
 func main() {
 	cfg := config.LoadConfig()
