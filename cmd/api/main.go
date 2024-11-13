@@ -3,6 +3,7 @@ package main
 import (
 	_ "golang_api/docs"
 	database "golang_api/internal"
+	"os"
 
 	// "golang_api/pkg/models"
 	"golang_api/pkg/config"
@@ -10,6 +11,8 @@ import (
 
 	// "golang_api/pkg/repositories"
 	"log"
+
+	ginSwagger "github.com/swaggo/gin-swagger"
 	// "golang_api/pkg/models"
 	// "golang_api/pkg/repositories"
 	// "log"
@@ -27,6 +30,12 @@ func main() {
 	// Connect to the database
 	database.Connect()
 	defer database.Close()
+
+	swaggerHost := os.Getenv("SWAGGER_HOST")
+	if swaggerHost == "" {
+		swaggerHost = "localhost:8080"
+	}
+	ginSwagger.URL("http://" + swaggerHost + "/swagger/doc.json")
 
 	r := routes.SetupRouter()
 
