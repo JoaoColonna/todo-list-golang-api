@@ -1,1 +1,3 @@
-web: swag init -g ./cmd/api/main.go && ./main
+urgentworker: swag init -g ./cmd/api/main.go
+web: ./main
+
