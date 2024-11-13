@@ -1,1 +1,1 @@
-web: ./start.sh
+web: swag init -g ./cmd/api/main.go && ./main
