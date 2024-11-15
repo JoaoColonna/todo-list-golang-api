@@ -68,25 +68,25 @@ func (r *User) Update(user *models.Tb_User) error {
 	return nil
 }
 
-func (r *User) Delete(user *models.Tb_User) error {
+func (r *User) Delete(userID int) error {
 	db := database.GetDB()
 
 	query := `
 		DELETE FROM tb_user
-		WHERE usr_id =$1
+		WHERE usr_id = $1
 	`
 
-	_, err := db.Exec(context.Background(), query, user.Usr_id)
+	_, err := db.Exec(context.Background(), query, userID)
 	if err != nil {
 		log.Printf("Erro ao deletar o usuário %v", err)
 		return err
 	}
 
-	log.Printf("Usuário deletado com sucesso %d\n", user.Usr_id)
+	log.Printf("Usuário deletado com sucesso %d\n", userID)
 	return nil
 }
 
-func (r *User) Select(userId ...int) ([]*models.Tb_User, error) {
+func (r *User) Select(userId ...int) ([]*models.UserResponse, error) {
 	db := database.GetDB()
 
 	var query string
@@ -94,10 +94,10 @@ func (r *User) Select(userId ...int) ([]*models.Tb_User, error) {
 	var err error
 
 	if len(userId) > 0 {
-		query = `SELECT usr_id, usr_name, usr_email, usr_password FROM tb_user WHERE usr_id = $1`
+		query = `SELECT usr_id, usr_name, usr_email FROM tb_user WHERE usr_id = $1`
 		rows, err = db.Query(context.Background(), query, userId[0])
 	} else {
-		query = `SELECT usr_id, usr_name, usr_email, usr_password FROM tb_user`
+		query = `SELECT usr_id, usr_name, usr_email FROM tb_user`
 		rows, err = db.Query(context.Background(), query)
 	}
 
@@ -107,14 +107,13 @@ func (r *User) Select(userId ...int) ([]*models.Tb_User, error) {
 	}
 	defer rows.Close()
 
-	var users []*models.Tb_User
+	var users []*models.UserResponse
 	for rows.Next() {
-		var user models.Tb_User
+		var user models.UserResponse
 		err := rows.Scan(
 			&user.Usr_id,
 			&user.Usr_name,
 			&user.Usr_email,
-			&user.Usr_password,
 		)
 		if err != nil {
 			log.Printf("Erro ao escanear o usuário %v", err)

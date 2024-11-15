@@ -25,10 +25,9 @@ definitions:
     type: object
   repositories.User:
     type: object
-host: localhost:8080
 info:
   contact: {}
-  description: This is a sample server.
+  description: API RESTful em Go
   title: To-Do List Golang API
   version: "1.0"
 paths:
@@ -63,6 +62,36 @@ paths:
       tags:
       - users
   /user/{user_id}:
+    delete:
+      consumes:
+      - application/json
+      description: DeleteUser deletes a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Delete a user by ID
+      tags:
+      - users
     get:
       consumes:
       - application/json
@@ -93,6 +122,44 @@ paths:
           schema:
             $ref: '#/definitions/models.ErrorResponse'
       summary: Get user by ID
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: UpdateUser updates an existing user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: User DTO
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Update an existing user
       tags:
       - users
   /users:
