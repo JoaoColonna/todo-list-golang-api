@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"fmt"
 	database "golang_api/internal"
 	"golang_api/pkg/models"
 	"log"
@@ -129,6 +130,27 @@ func (r *User) Select(userId ...int) ([]*models.UserResponse, error) {
 
 	log.Printf("Usuário(s) selecionado(s) com sucesso %v", users)
 	return users, nil
+}
+
+func (r *User) SelectByEmail(email string) (*models.Tb_User, error) {
+	db := database.GetDB()
+
+	query := `SELECT usr_id, usr_name, usr_email, usr_password from tb_user WHERE usr_email = $1`
+
+	row := db.QueryRow(context.Background(), query, email)
+
+	var user models.Tb_User
+
+	err := row.Scan(&user.Usr_id, &user.Usr_name, &user.Usr_email, &user.Usr_password)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("user not found")
+		}
+		log.Printf("error finding user: %v", err)
+		return nil, err
+	}
+
+	return &user, nil
 }
 
 // Insert, Update, Delete de tarefas

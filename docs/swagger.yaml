@@ -5,6 +5,17 @@ definitions:
       error:
         type: string
     type: object
+  models.LoginResponse:
+    properties:
+      token:
+        type: string
+      usr_email:
+        type: string
+      usr_id:
+        type: integer
+      usr_name:
+        type: string
+    type: object
   models.UserDTO:
     properties:
       usr_email:
@@ -31,6 +42,36 @@ info:
   title: To-Do List Golang API
   version: "1.0"
 paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Login authenticates a user
+      parameters:
+      - description: User DTO
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LoginResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Authenticate a user
+      tags:
+      - auth
   /user:
     post:
       consumes:

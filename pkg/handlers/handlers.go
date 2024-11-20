@@ -6,6 +6,7 @@ import (
 
 	"golang_api/pkg/models"
 	"golang_api/pkg/repositories"
+	"golang_api/pkg/utils"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -192,4 +193,56 @@ func DeleteUser(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
+}
+
+// Login godoc
+// @Summary Authenticate a user
+// @Description Login authenticates a user
+// @Tags auth
+// @Accept  json
+// @Produce  json
+// @Param user body models.UserDTO true "User DTO"
+// @Success 200 {object} models.LoginResponse
+// @Failure 401 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /login [post]
+func Login(c *gin.Context) {
+	var user models.UserDTO
+
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid data"})
+		return
+	}
+
+	userRepository := repositories.NewUserRepository()
+	dbUser, err := userRepository.SelectByEmail(user.Usr_email)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, models.ErrorResponse{Error: "Invalid credentials"})
+		return
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(dbUser.Usr_password), []byte(user.Usr_password))
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, models.ErrorResponse{Error: "Invalid credentials"})
+		return
+	}
+
+	token, err := utils.GenerateToken(dbUser.Usr_id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Error generating token"})
+		return
+	}
+
+	userResponse := models.UserResponse{
+		Usr_id: dbUser.Usr_id,
+		Usr_name: dbUser.Usr_name,
+		Usr_email: dbUser.Usr_email,
+	}
+
+	loginResponse := models.LoginResponse{
+		Token: token,
+		UserResponse: userResponse,
+	}
+
+	c.JSON(http.StatusOK, loginResponse)	
 }

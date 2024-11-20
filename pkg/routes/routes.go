@@ -19,5 +19,7 @@ func SetupRouter() *gin.Engine {
 	r.POST("/user", handlers.CreateUser)
 	r.PUT("/user/:user_id", handlers.UpdateUser)
 	r.DELETE("/user/:user_id", handlers.DeleteUser)
+
+	r.POST("/login", handlers.Login)
 	return r
 }
