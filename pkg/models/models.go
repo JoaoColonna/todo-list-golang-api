@@ -26,8 +26,18 @@ type Tb_Task struct {
 	Tsk_name          string    `json:"tsk_name"`
 	Tsk_description   string    `json:"tsk_description"`
 	Tsk_creation_date time.Time `json:"tsk_creation_date"`
-	Tsk_update_date   time.Time `json:"task_update_date"`
-	Tsk_deadline_date time.Time `json:"taks_deadline_date"`
+	Tsk_update_date   time.Time `json:"tsk_update_date"`
+	Tsk_deadline_date time.Time `json:"tks_deadline_date"`
+	Tsk_color         string    `json:"tsk_color"`
+	Usr_id            int       `json:"usr_id"`
+	Tskpr_id          int       `json:"tskpr_id"`
+	Tskst_id          int       `json:"tsksk_id"`
+}
+
+type Task_Request struct {
+	Tsk_name          string    `json:"tsk_name"`
+	Tsk_description   string    `json:"tsk_description"`
+	Tsk_deadline_date string 	`json:"tks_deadline_date"`
 	Tsk_color         string    `json:"tsk_color"`
 	Usr_id            int       `json:"usr_id"`
 	Tskpr_id          int       `json:"tskpr_id"`

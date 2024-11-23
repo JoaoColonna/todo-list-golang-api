@@ -106,12 +106,12 @@ const docTemplate = `{
                 "summary": "Create a new task",
                 "parameters": [
                     {
-                        "description": "Task DTO",
+                        "description": "Task_Request",
                         "name": "task",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Tb_Task"
+                            "$ref": "#/definitions/models.Task_Request"
                         }
                     }
                 ],
@@ -207,12 +207,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Task DTO",
+                        "description": "Task_Request",
                         "name": "task",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Tb_Task"
+                            "$ref": "#/definitions/models.Task_Request"
                         }
                     }
                 ],
@@ -546,13 +546,36 @@ const docTemplate = `{
                 }
             }
         },
+        "models.Task_Request": {
+            "type": "object",
+            "properties": {
+                "tks_deadline_date": {
+                    "type": "string"
+                },
+                "tsk_color": {
+                    "type": "string"
+                },
+                "tsk_description": {
+                    "type": "string"
+                },
+                "tsk_name": {
+                    "type": "string"
+                },
+                "tskpr_id": {
+                    "type": "integer"
+                },
+                "tsksk_id": {
+                    "type": "integer"
+                },
+                "usr_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.Tb_Task": {
             "type": "object",
             "properties": {
-                "taks_deadline_date": {
-                    "type": "string"
-                },
-                "task_update_date": {
+                "tks_deadline_date": {
                     "type": "string"
                 },
                 "tsk_color": {
@@ -568,6 +591,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "tsk_name": {
+                    "type": "string"
+                },
+                "tsk_update_date": {
                     "type": "string"
                 },
                 "tskpr_id": {

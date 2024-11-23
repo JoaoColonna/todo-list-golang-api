@@ -304,14 +304,21 @@ func GetTasks(c *gin.Context) {
 // @Tags tasks
 // @Accept  json
 // @Produce  json
-// @Param task body models.Tb_Task true "Task DTO"
+// @Param task body models.Task_Request true "Task_Request"
 // @Success 201 {object} models.Tb_Task
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Router /task [post]
 func CreateTask(c *gin.Context) {
-	var tb_Task models.Tb_Task
+	var tb_Task models.Task_Request
 	if err := c.ShouldBindJSON(&tb_Task); err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid input"})
+		return
+	}
+
+	deadlineDate, err := time.Parse("2006-01-02 15:04:05", tb_Task.Tsk_deadline_date);
+
+	if err != nil{
 		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid input"})
 		return
 	}
@@ -322,17 +329,21 @@ func CreateTask(c *gin.Context) {
 		Tsk_description:   tb_Task.Tsk_description,
 		Tsk_creation_date: time.Now(),
 		Tsk_update_date:   time.Now(),
-		Tsk_deadline_date: tb_Task.Tsk_deadline_date,
+		Tsk_deadline_date: deadlineDate,
 		Tsk_color:         tb_Task.Tsk_color,
 		Tskpr_id:          tb_Task.Tskpr_id,
 		Tskst_id:          tb_Task.Tskst_id,
 		Usr_id:            tb_Task.Usr_id,
 	}
 
-	if err := taskRepo.Insert(&task); err != nil {
+	var userId int
+
+	userId, err = taskRepo.Insert(&task); 
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to create task"})
 		return
 	}
+	task.Tsk_id = userId
 
 	c.JSON(http.StatusCreated, task)
 }
@@ -344,36 +355,48 @@ func CreateTask(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param task_id path int true "Task ID"
-// @Param task body models.Tb_Task true "Task DTO"
+// @Param task body models.Task_Request true "Task_Request"
 // @Success 200 {object} models.Tb_Task
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 404 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Router /task/{task_id} [put]
 func UpdateTask(c *gin.Context) {
-	var tb_Task models.Tb_Task
-	if err := c.ShouldBindJSON(&tb_Task); err != nil {
-		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid input"})
-		return
-	}
+	taskIDParam := c.Param("task_id")
+	taskRepo := repositories.NewTaskRepository()
 
-	taskID, err := strconv.Atoi(c.Param("id"))
+	taskID, err := strconv.Atoi(taskIDParam)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid task ID"})
 		return
 	}
 
-	taskRepo := repositories.NewTaskRepository()
+	var task_request models.Task_Request
+
+
+	if err := c.ShouldBindJSON(&task_request); err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid input"})
+		return
+	}
+
+	deadlineDate, err := time.Parse("2006-01-02 15:04:05", task_request.Tsk_deadline_date);
+
+	if err != nil{
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid input"})
+		return
+	}
+
 	task := models.Tb_Task{
 		Tsk_id:            taskID,
-		Tsk_name:          tb_Task.Tsk_name,
-		Tsk_description:   tb_Task.Tsk_description,
+		Tsk_name:          task_request.Tsk_name,
+		Tsk_description:   task_request.Tsk_description,
+		Tsk_creation_date: time.Now(),
 		Tsk_update_date:   time.Now(),
-		Tsk_deadline_date: tb_Task.Tsk_deadline_date,
-		Tsk_color:         tb_Task.Tsk_color,
-		Tskpr_id:          tb_Task.Tskpr_id,
-		Tskst_id:          tb_Task.Tskst_id,
-		Usr_id:            tb_Task.Usr_id,
+		Tsk_deadline_date: deadlineDate,
+		Tsk_color:         task_request.Tsk_color,
+		Tskpr_id:          task_request.Tskpr_id,
+		Tskst_id:          task_request.Tskst_id,
+		Usr_id:            task_request.Usr_id,
 	}
 
 	if err := taskRepo.Update(&task); err != nil {
@@ -397,19 +420,17 @@ func UpdateTask(c *gin.Context) {
 // @Failure 500 {object} models.ErrorResponse
 // @Router /task/{task_id} [delete]
 func DeleteTask(c *gin.Context) {
-	taskID, err := strconv.Atoi(c.Param("id"))
+	taskID, err := strconv.Atoi(c.Param("task_id"))
+	taskRepo := repositories.NewTaskRepository()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid task ID"})
 		return
 	}
 
-	taskRepo := repositories.NewTaskRepository()
-	task := models.Tb_Task{Tsk_id: taskID}
-
-	if err := taskRepo.Delete(&task); err != nil {
+	if err := taskRepo.Delete(taskID); err != nil {
 		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to delete task"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Task deleted successfully"})
+	c.Status(http.StatusNoContent)
 }

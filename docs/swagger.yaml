@@ -16,11 +16,26 @@ definitions:
       usr_name:
         type: string
     type: object
+  models.Task_Request:
+    properties:
+      tks_deadline_date:
+        type: string
+      tsk_color:
+        type: string
+      tsk_description:
+        type: string
+      tsk_name:
+        type: string
+      tskpr_id:
+        type: integer
+      tsksk_id:
+        type: integer
+      usr_id:
+        type: integer
+    type: object
   models.Tb_Task:
     properties:
-      taks_deadline_date:
-        type: string
-      task_update_date:
+      tks_deadline_date:
         type: string
       tsk_color:
         type: string
@@ -31,6 +46,8 @@ definitions:
       tsk_id:
         type: integer
       tsk_name:
+        type: string
+      tsk_update_date:
         type: string
       tskpr_id:
         type: integer
@@ -121,12 +138,12 @@ paths:
       - application/json
       description: CreateTask creates a new task
       parameters:
-      - description: Task DTO
+      - description: Task_Request
         in: body
         name: task
         required: true
         schema:
-          $ref: '#/definitions/models.Tb_Task'
+          $ref: '#/definitions/models.Task_Request'
       produces:
       - application/json
       responses:
@@ -218,12 +235,12 @@ paths:
         name: task_id
         required: true
         type: integer
-      - description: Task DTO
+      - description: Task_Request
         in: body
         name: task
         required: true
         schema:
-          $ref: '#/definitions/models.Tb_Task'
+          $ref: '#/definitions/models.Task_Request'
       produces:
       - application/json
       responses:
