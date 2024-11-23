@@ -236,17 +236,17 @@ func Login(c *gin.Context) {
 	}
 
 	userResponse := models.UserResponse{
-		Usr_id: dbUser.Usr_id,
-		Usr_name: dbUser.Usr_name,
+		Usr_id:    dbUser.Usr_id,
+		Usr_name:  dbUser.Usr_name,
 		Usr_email: dbUser.Usr_email,
 	}
 
 	loginResponse := models.LoginResponse{
-		Token: token,
+		Token:        token,
 		UserResponse: userResponse,
 	}
 
-	c.JSON(http.StatusOK, loginResponse)	
+	c.JSON(http.StatusOK, loginResponse)
 }
 
 // GetTask godoc
@@ -256,12 +256,11 @@ func Login(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param task_id path int true "Task ID"
-// @Success 200 {object} repositories.Task
+// @Success 200 {object} models.Tb_Task
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 404 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Router /task/{task_id} [get]
-
 func GetTask(c *gin.Context) {
 	taskIDParam := c.Param("task_id")
 	taskRepo := repositories.NewTaskRepository()
@@ -283,13 +282,12 @@ func GetTask(c *gin.Context) {
 // Getask godoc
 // @Summary Get all task
 // @Description GetTask returns all task
-// @Tags task
+// @Tags tasks
 // @Accept  json
 // @Produce  json
 // @Success 200 {array} repositories.User
 // @Failure 500 {object} models.ErrorResponse
 // @Router /task [get]
-
 func GetTasks(c *gin.Context) {
 	taskRepo := repositories.NewTaskRepository()
 	tasks, err := taskRepo.Select()
@@ -307,11 +305,10 @@ func GetTasks(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param task body models.Tb_Task true "Task DTO"
-// @Success 201 {object} models.TaskResponse
+// @Success 201 {object} models.Tb_Task
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Router /task [post]
-
 func CreateTask(c *gin.Context) {
 	var tb_Task models.Tb_Task
 	if err := c.ShouldBindJSON(&tb_Task); err != nil {
@@ -348,12 +345,11 @@ func CreateTask(c *gin.Context) {
 // @Produce  json
 // @Param task_id path int true "Task ID"
 // @Param task body models.Tb_Task true "Task DTO"
-// @Success 200 {object} models.TaskResponse
+// @Success 200 {object} models.Tb_Task
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 404 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Router /task/{task_id} [put]
-
 func UpdateTask(c *gin.Context) {
 	var tb_Task models.Tb_Task
 	if err := c.ShouldBindJSON(&tb_Task); err != nil {
@@ -400,7 +396,6 @@ func UpdateTask(c *gin.Context) {
 // @Failure 404 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Router /task/{task_id} [delete]
-
 func DeleteTask(c *gin.Context) {
 	taskID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -418,4 +413,3 @@ func DeleteTask(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Task deleted successfully"})
 }
-

@@ -16,6 +16,29 @@ definitions:
       usr_name:
         type: string
     type: object
+  models.Tb_Task:
+    properties:
+      taks_deadline_date:
+        type: string
+      task_update_date:
+        type: string
+      tsk_color:
+        type: string
+      tsk_creation_date:
+        type: string
+      tsk_description:
+        type: string
+      tsk_id:
+        type: integer
+      tsk_name:
+        type: string
+      tskpr_id:
+        type: integer
+      tsksk_id:
+        type: integer
+      usr_id:
+        type: integer
+    type: object
   models.UserDTO:
     properties:
       usr_email:
@@ -72,6 +95,157 @@ paths:
       summary: Authenticate a user
       tags:
       - auth
+  /task:
+    get:
+      consumes:
+      - application/json
+      description: GetTask returns all task
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/repositories.User'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get all task
+      tags:
+      - tasks
+    post:
+      consumes:
+      - application/json
+      description: CreateTask creates a new task
+      parameters:
+      - description: Task DTO
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/models.Tb_Task'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Tb_Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Create a new task
+      tags:
+      - tasks
+  /task/{task_id}:
+    delete:
+      consumes:
+      - application/json
+      description: DeleteTask deletes a task by ID
+      parameters:
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Delete a task by ID
+      tags:
+      - tasks
+    get:
+      consumes:
+      - application/json
+      description: GetTask returns a task by ID
+      parameters:
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Tb_Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get task by ID
+      tags:
+      - tasks
+    put:
+      consumes:
+      - application/json
+      description: UpdateTask updates an existing task by ID
+      parameters:
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: integer
+      - description: Task DTO
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/models.Tb_Task'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Tb_Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Update an existing task
+      tags:
+      - tasks
   /user:
     post:
       consumes:
