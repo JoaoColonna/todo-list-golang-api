@@ -14,11 +14,20 @@ func SetupRouter() *gin.Engine {
 	// Swagger endpoint
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	//user
 	r.GET("/users", handlers.GetUsers)
 	r.GET("/user/:user_id", handlers.GetUser)
 	r.POST("/user", handlers.CreateUser)
 	r.PUT("/user/:user_id", handlers.UpdateUser)
 	r.DELETE("/user/:user_id", handlers.DeleteUser)
+
+	//task
+	r.GET("/tasks", handlers.GetTasks)
+	r.GET("/task/:task_id", handlers.GetTask)
+	r.POST("/task", handlers.CreateTask)
+	r.PUT("/task/:task_id", handlers.UpdateTask)
+	r.DELETE("/task/:task_id", handlers.DeleteTask)
+
 
 	r.POST("/login", handlers.Login)
 	return r

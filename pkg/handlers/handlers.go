@@ -8,6 +8,8 @@ import (
 	"golang_api/pkg/repositories"
 	"golang_api/pkg/utils"
 
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -246,3 +248,174 @@ func Login(c *gin.Context) {
 
 	c.JSON(http.StatusOK, loginResponse)	
 }
+
+// GetTask godoc
+// @Summary Get task by ID
+// @Description GetTask returns a task by ID
+// @Tags tasks
+// @Accept  json
+// @Produce  json
+// @Param task_id path int true "Task ID"
+// @Success 200 {object} repositories.Task
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 404 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /task/{task_id} [get]
+
+func GetTask(c *gin.Context) {
+	taskIDParam := c.Param("task_id")
+	taskRepo := repositories.NewTaskRepository()
+
+	taskID, err := strconv.Atoi(taskIDParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid task ID"})
+		return
+	}
+
+	task, err := taskRepo.Select(taskID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Internal Server Error"})
+		return
+	}
+	c.JSON(http.StatusOK, task)
+}
+
+// Getask godoc
+// @Summary Get all task
+// @Description GetTask returns all task
+// @Tags task
+// @Accept  json
+// @Produce  json
+// @Success 200 {array} repositories.User
+// @Failure 500 {object} models.ErrorResponse
+// @Router /task [get]
+
+func GetTasks(c *gin.Context) {
+	taskRepo := repositories.NewTaskRepository()
+	tasks, err := taskRepo.Select()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Internal Server Error"})
+		return
+	}
+	c.JSON(http.StatusOK, tasks)
+}
+
+// CreateTask godoc
+// @Summary Create a new task
+// @Description CreateTask creates a new task
+// @Tags tasks
+// @Accept  json
+// @Produce  json
+// @Param task body models.Tb_Task true "Task DTO"
+// @Success 201 {object} models.TaskResponse
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /task [post]
+
+func CreateTask(c *gin.Context) {
+	var tb_Task models.Tb_Task
+	if err := c.ShouldBindJSON(&tb_Task); err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid input"})
+		return
+	}
+
+	taskRepo := repositories.NewTaskRepository()
+	task := models.Tb_Task{
+		Tsk_name:          tb_Task.Tsk_name,
+		Tsk_description:   tb_Task.Tsk_description,
+		Tsk_creation_date: time.Now(),
+		Tsk_update_date:   time.Now(),
+		Tsk_deadline_date: tb_Task.Tsk_deadline_date,
+		Tsk_color:         tb_Task.Tsk_color,
+		Tskpr_id:          tb_Task.Tskpr_id,
+		Tskst_id:          tb_Task.Tskst_id,
+		Usr_id:            tb_Task.Usr_id,
+	}
+
+	if err := taskRepo.Insert(&task); err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to create task"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, task)
+}
+
+// UpdateTask godoc
+// @Summary Update an existing task
+// @Description UpdateTask updates an existing task by ID
+// @Tags tasks
+// @Accept  json
+// @Produce  json
+// @Param task_id path int true "Task ID"
+// @Param task body models.Tb_Task true "Task DTO"
+// @Success 200 {object} models.TaskResponse
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 404 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /task/{task_id} [put]
+
+func UpdateTask(c *gin.Context) {
+	var tb_Task models.Tb_Task
+	if err := c.ShouldBindJSON(&tb_Task); err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid input"})
+		return
+	}
+
+	taskID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid task ID"})
+		return
+	}
+
+	taskRepo := repositories.NewTaskRepository()
+	task := models.Tb_Task{
+		Tsk_id:            taskID,
+		Tsk_name:          tb_Task.Tsk_name,
+		Tsk_description:   tb_Task.Tsk_description,
+		Tsk_update_date:   time.Now(),
+		Tsk_deadline_date: tb_Task.Tsk_deadline_date,
+		Tsk_color:         tb_Task.Tsk_color,
+		Tskpr_id:          tb_Task.Tskpr_id,
+		Tskst_id:          tb_Task.Tskst_id,
+		Usr_id:            tb_Task.Usr_id,
+	}
+
+	if err := taskRepo.Update(&task); err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to update task"})
+		return
+	}
+
+	c.JSON(http.StatusOK, task)
+}
+
+// DeleteTask godoc
+// @Summary Delete a task by ID
+// @Description DeleteTask deletes a task by ID
+// @Tags tasks
+// @Accept  json
+// @Produce  json
+// @Param task_id path int true "Task ID"
+// @Success 204
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 404 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /task/{task_id} [delete]
+
+func DeleteTask(c *gin.Context) {
+	taskID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid task ID"})
+		return
+	}
+
+	taskRepo := repositories.NewTaskRepository()
+	task := models.Tb_Task{Tsk_id: taskID}
+
+	if err := taskRepo.Delete(&task); err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to delete task"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Task deleted successfully"})
+}
+

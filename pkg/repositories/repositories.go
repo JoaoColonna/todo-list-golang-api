@@ -219,7 +219,7 @@ func (r *TaskRepository) Delete(task *models.Tb_Task) error {
 	return nil
 }
 
-func (r *TaskRepository) Select(taskId int) (*models.Tb_Task, error) {
+func (r *TaskRepository) Select(taskId ...int) (*models.Tb_Task, error) {
 	db := database.GetDB()
 
 	query := `SELECT tsk_id, tsk_name, tsk_description, tsk_creation_date, tsk_update_date, tsk_deadline_date, tsk_color, tskpr_id, tskst_id, usr_id FROM tb_user WHERE tsk_id = $1`
