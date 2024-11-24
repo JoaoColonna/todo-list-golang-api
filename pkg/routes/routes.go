@@ -2,6 +2,7 @@ package routes
 
 import (
 	"golang_api/pkg/handlers"
+	"golang_api/pkg/middlewares"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -10,6 +11,8 @@ import (
 
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
+
+	r.Use(middlewares.CORSMiddleware())
 
 	// Swagger endpoint
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
