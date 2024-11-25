@@ -61,6 +61,88 @@ const docTemplate = `{
                 }
             }
         },
+        "/status": {
+            "get": {
+                "description": "GetStatus returns all status",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "status"
+                ],
+                "summary": "Get all status",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/repositories.Task_status"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/status/{tskst_id}": {
+            "get": {
+                "description": "GetTask returns a status by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "status"
+                ],
+                "summary": "Get status by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Status ID",
+                        "name": "tskst_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Tb_Task_status"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/task": {
             "get": {
                 "description": "GetTask returns all task",
@@ -80,7 +162,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/repositories.User"
+                                "$ref": "#/definitions/repositories.TaskRepository"
                             }
                         }
                     },
@@ -607,6 +689,17 @@ const docTemplate = `{
                 }
             }
         },
+        "models.Tb_Task_status": {
+            "type": "object",
+            "properties": {
+                "tskst_id": {
+                    "type": "integer"
+                },
+                "tskst_name": {
+                    "type": "string"
+                }
+            }
+        },
         "models.UserDTO": {
             "type": "object",
             "properties": {
@@ -634,6 +727,12 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "repositories.TaskRepository": {
+            "type": "object"
+        },
+        "repositories.Task_status": {
+            "type": "object"
         },
         "repositories.User": {
             "type": "object"

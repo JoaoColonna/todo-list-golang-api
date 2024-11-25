@@ -27,6 +27,10 @@ func NewUserRepository() *User {
 	return &User{}
 }
 
+func NewStatusRepository() *Task_status{
+	return &Task_status{}
+}
+
 // Insert, Update, Delete de usuários
 func (r *User) Insert(user *models.Tb_User) (int, error) {
 	db := database.GetDB()
@@ -434,24 +438,50 @@ func (r *Task_category) Select(Tsk_id int, Cat_id int) (*models.Tb_Task_category
 
 // Select de status
 
-func (r *Task_status) Select(Tskst_id int) (*models.Tb_Task_status, error) {
+func (r *Task_status) Select(Tskst_id ...int) ([]*models.Tb_Task_status, error) {
 	db := database.GetDB()
 
-	query := `SELECT tskst_id, tskst_name FROM tb_task_status WHERE tskst_id = $1`
+	var query string
+	var rows pgx.Rows
+	var err error
 
-	var task_status models.Tb_Task_status
+	if len(Tskst_id) > 0{
+		query = `SELECT tskst_id, tskst_name FROM tb_task_status WHERE tskst_id = $1`
+		rows, err = db.Query(context.Background(), query, Tskst_id[0])
+	} else {
+		query = `SELECT tskst_id, tskst_name FROM tb_task_status`
+		rows, err = db.Query(context.Background(), query)
+	}
 
-	err := db.QueryRow(context.Background(), query, Tskst_id).Scan(
-		&task_status.Tskst_id,
-		&task_status.Tskst_name,
-	)
 	if err != nil {
 		log.Printf("Erro ao selecionar status %v", err)
 		return nil, err
 	}
 
-	log.Printf("Status selecionado com sucesso %v", task_status)
-	return &task_status, nil
+	defer rows.Close()
+
+	var all_task_status []*models.Tb_Task_status
+	
+	for rows.Next(){
+		var task_status models.Tb_Task_status
+	err := rows.Scan(
+		&task_status.Tskst_id,
+		&task_status.Tskst_name,
+	)
+		if err != nil {
+			log.Printf("Erro ao selecionar a status %v", err)
+			return nil, err
+		}
+		all_task_status = append(all_task_status, &task_status)
+	}
+
+	if err = rows.Err(); err != nil {
+		log.Printf("Erro ao iterar sobre linhas %v", err)
+		return nil, err
+	}
+
+	log.Printf("Status selecionado com sucesso %v", all_task_status)
+	return all_task_status, nil
 }
 
 // Select de prioridade

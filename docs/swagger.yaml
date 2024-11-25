@@ -56,6 +56,13 @@ definitions:
       usr_id:
         type: integer
     type: object
+  models.Tb_Task_status:
+    properties:
+      tskst_id:
+        type: integer
+      tskst_name:
+        type: string
+    type: object
   models.UserDTO:
     properties:
       usr_email:
@@ -73,6 +80,10 @@ definitions:
         type: integer
       usr_name:
         type: string
+    type: object
+  repositories.Task_status:
+    type: object
+  repositories.TaskRepository:
     type: object
   repositories.User:
     type: object
@@ -112,6 +123,60 @@ paths:
       summary: Authenticate a user
       tags:
       - auth
+  /status:
+    get:
+      consumes:
+      - application/json
+      description: GetStatus returns all status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/repositories.Task_status'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get all status
+      tags:
+      - status
+  /status/{tskst_id}:
+    get:
+      consumes:
+      - application/json
+      description: GetTask returns a status by ID
+      parameters:
+      - description: Status ID
+        in: path
+        name: tskst_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Tb_Task_status'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get status by ID
+      tags:
+      - status
   /task:
     get:
       consumes:
@@ -124,7 +189,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/repositories.User'
+              $ref: '#/definitions/repositories.TaskRepository'
             type: array
         "500":
           description: Internal Server Error

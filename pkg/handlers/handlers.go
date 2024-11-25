@@ -279,13 +279,13 @@ func GetTask(c *gin.Context) {
 	c.JSON(http.StatusOK, task)
 }
 
-// Getask godoc
+// GeTasks godoc
 // @Summary Get all task
 // @Description GetTask returns all task
 // @Tags tasks
 // @Accept  json
 // @Produce  json
-// @Success 200 {array} repositories.User
+// @Success 200 {array} repositories.TaskRepository
 // @Failure 500 {object} models.ErrorResponse
 // @Router /task [get]
 func GetTasks(c *gin.Context) {
@@ -433,4 +433,53 @@ func DeleteTask(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
+}
+
+// GetStatus godoc
+// @Summary Get status by ID
+// @Description GetTask returns a status by ID
+// @Tags status
+// @Accept  json
+// @Produce  json
+// @Param tskst_id path int true "Status ID"
+// @Success 200 {object} models.Tb_Task_status
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 404 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /status/{tskst_id} [get]
+func GetStatus(c *gin.Context) {
+	statusIDParam := c.Param("tskst_id")
+	statusRepo := repositories.NewStatusRepository()
+
+	statusID, err := strconv.Atoi(statusIDParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid status ID"})
+		return
+	}
+
+	status, err := statusRepo.Select(statusID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Internal Server Error"})
+		return
+	}
+	c.JSON(http.StatusOK, status)
+}
+
+// GetAllStatus godoc
+// @Summary Get all status
+// @Description GetStatus returns all status
+// @Tags status
+// @Accept  json
+// @Produce  json
+// @Success 200 {array} repositories.Task_status
+// @Failure 500 {object} models.ErrorResponse
+// @Router /status [get]
+func GetAllStatus(c *gin.Context) {
+	statusRepo := repositories.NewStatusRepository()
+	allStatus, err := statusRepo.Select()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Internal Server Error"})
+		return
+	}
+	c.JSON(http.StatusOK, allStatus)
 }
