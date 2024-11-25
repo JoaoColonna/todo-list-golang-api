@@ -35,6 +35,9 @@ func SetupRouter() *gin.Engine {
 	r.GET("/status", handlers.GetAllStatus)
 	r.GET("/status/:tskst_id", handlers.GetStatus)
 
+	//priorities
+	r.GET("/priorities", handlers.GetPriorities)
+	r.GET("/priority/:tskpr_id", handlers.GetPriority)
 
 	r.POST("/login", handlers.Login)
 	return r

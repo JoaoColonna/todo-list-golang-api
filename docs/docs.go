@@ -61,9 +61,91 @@ const docTemplate = `{
                 }
             }
         },
+        "/priorities": {
+            "get": {
+                "description": "GetPriorities returns all priorities",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "priorities"
+                ],
+                "summary": "Get all priorities",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/repositories.Task_priority"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/priority/{tskpr_id}": {
+            "get": {
+                "description": "GetPriority returns a priority by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "priorities"
+                ],
+                "summary": "Get priority by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Priority ID",
+                        "name": "tskpr_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Tb_Task_priority"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/status": {
             "get": {
-                "description": "GetStatus returns all status",
+                "description": "GetAllStatus returns all status",
                 "consumes": [
                     "application/json"
                 ],
@@ -95,7 +177,7 @@ const docTemplate = `{
         },
         "/status/{tskst_id}": {
             "get": {
-                "description": "GetTask returns a status by ID",
+                "description": "GetStatus returns a status by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -689,6 +771,17 @@ const docTemplate = `{
                 }
             }
         },
+        "models.Tb_Task_priority": {
+            "type": "object",
+            "properties": {
+                "tskpr_id": {
+                    "type": "integer"
+                },
+                "tskpr_name": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Tb_Task_status": {
             "type": "object",
             "properties": {
@@ -729,6 +822,9 @@ const docTemplate = `{
             }
         },
         "repositories.TaskRepository": {
+            "type": "object"
+        },
+        "repositories.Task_priority": {
             "type": "object"
         },
         "repositories.Task_status": {

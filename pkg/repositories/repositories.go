@@ -27,8 +27,12 @@ func NewUserRepository() *User {
 	return &User{}
 }
 
-func NewStatusRepository() *Task_status{
+func NewStatusRepository() *Task_status {
 	return &Task_status{}
+}
+
+func NewPriorityRepository() *Task_priority {
+	return &Task_priority{}
 }
 
 // Insert, Update, Delete de usuários
@@ -226,14 +230,13 @@ func (r *TaskRepository) Delete(taskID int) error {
 func (r *TaskRepository) Select(taskId ...int) ([]*models.Tb_Task, error) {
 	db := database.GetDB()
 
-
 	var query string
 	var rows pgx.Rows
 	var err error
 
 	if len(taskId) > 0 {
-			query = `SELECT tsk_id, tsk_name, tsk_description, tsk_creation_date, tsk_update_date, tsk_deadline_date, tsk_color, tskpr_id, tskst_id, usr_id FROM tb_task WHERE tsk_id = $1`
-			rows, err = db.Query(context.Background(), query, taskId[0])
+		query = `SELECT tsk_id, tsk_name, tsk_description, tsk_creation_date, tsk_update_date, tsk_deadline_date, tsk_color, tskpr_id, tskst_id, usr_id FROM tb_task WHERE tsk_id = $1`
+		rows, err = db.Query(context.Background(), query, taskId[0])
 	} else {
 		query = `SELECT tsk_id, tsk_name, tsk_description, tsk_creation_date, tsk_update_date, tsk_deadline_date, tsk_color, tskpr_id, tskst_id, usr_id FROM tb_task`
 		rows, err = db.Query(context.Background(), query)
@@ -247,7 +250,7 @@ func (r *TaskRepository) Select(taskId ...int) ([]*models.Tb_Task, error) {
 	defer rows.Close()
 
 	var tasks []*models.Tb_Task
-	for rows.Next(){
+	for rows.Next() {
 		var task models.Tb_Task
 		err := rows.Scan(
 			&task.Tsk_id,
@@ -445,7 +448,7 @@ func (r *Task_status) Select(Tskst_id ...int) ([]*models.Tb_Task_status, error) 
 	var rows pgx.Rows
 	var err error
 
-	if len(Tskst_id) > 0{
+	if len(Tskst_id) > 0 {
 		query = `SELECT tskst_id, tskst_name FROM tb_task_status WHERE tskst_id = $1`
 		rows, err = db.Query(context.Background(), query, Tskst_id[0])
 	} else {
@@ -461,13 +464,13 @@ func (r *Task_status) Select(Tskst_id ...int) ([]*models.Tb_Task_status, error) 
 	defer rows.Close()
 
 	var all_task_status []*models.Tb_Task_status
-	
-	for rows.Next(){
+
+	for rows.Next() {
 		var task_status models.Tb_Task_status
-	err := rows.Scan(
-		&task_status.Tskst_id,
-		&task_status.Tskst_name,
-	)
+		err := rows.Scan(
+			&task_status.Tskst_id,
+			&task_status.Tskst_name,
+		)
 		if err != nil {
 			log.Printf("Erro ao selecionar a status %v", err)
 			return nil, err
@@ -486,22 +489,47 @@ func (r *Task_status) Select(Tskst_id ...int) ([]*models.Tb_Task_status, error) 
 
 // Select de prioridade
 
-func (r *Task_priority) Select(Tskpr_id int) (*models.Tb_Task_priority, error) {
+func (r *Task_priority) Select(Tskpr_id ...int) ([]*models.Tb_Task_priority, error) {
 	db := database.GetDB()
 
-	query := `SELECT tskpr_id, tskpr_name FROM tb_task_priority WHERE tskpr_id = $1`
+	var query string
+	var rows pgx.Rows
+	var err error
 
-	var task_priority models.Tb_Task_priority
+	if len(Tskpr_id) > 0 {
+		query = `SELECT tskpr_id, tskpr_name FROM tb_task_priority WHERE tskpr_id = $1`
+		rows, err = db.Query(context.Background(), query, Tskpr_id[0])
+	} else {
+		query = `SELECT tskpr_id, tskpr_name FROM tb_task_priority`
+		rows, err = db.Query(context.Background(), query)
+	}
 
-	err := db.QueryRow(context.Background(), query, Tskpr_id).Scan(
-		&task_priority.Tskpr_id,
-		&task_priority.Tskpr_name,
-	)
 	if err != nil {
-		log.Printf("Erro ao selecionar a prioridade %v", err)
+		log.Printf("Erro ao selecionar prioridade %v", err)
 		return nil, err
 	}
 
-	log.Printf("Prioridade selecionada com sucesso %v", task_priority)
-	return &task_priority, nil
+	defer rows.Close()
+
+	var task_priorities []*models.Tb_Task_priority
+
+	for rows.Next() {
+		var task_priority models.Tb_Task_priority
+		err := rows.Scan(
+			&task_priority.Tskpr_id,
+			&task_priority.Tskpr_name,
+		)
+		if err != nil {
+			log.Printf("Erro ao selecionar a prioridade %v", err)
+			return nil, err
+		}
+		task_priorities = append(task_priorities, &task_priority)
+	}
+	if err = rows.Err(); err != nil {
+		log.Printf("Erro ao iterar sobre linhas %v", err)
+		return nil, err
+	}
+
+	log.Printf("Prioridade selecionada com sucesso %v", task_priorities)
+	return task_priorities, nil
 }

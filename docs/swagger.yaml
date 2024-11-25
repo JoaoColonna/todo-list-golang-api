@@ -56,6 +56,13 @@ definitions:
       usr_id:
         type: integer
     type: object
+  models.Tb_Task_priority:
+    properties:
+      tskpr_id:
+        type: integer
+      tskpr_name:
+        type: string
+    type: object
   models.Tb_Task_status:
     properties:
       tskst_id:
@@ -80,6 +87,8 @@ definitions:
         type: integer
       usr_name:
         type: string
+    type: object
+  repositories.Task_priority:
     type: object
   repositories.Task_status:
     type: object
@@ -123,11 +132,65 @@ paths:
       summary: Authenticate a user
       tags:
       - auth
+  /priorities:
+    get:
+      consumes:
+      - application/json
+      description: GetPriorities returns all priorities
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/repositories.Task_priority'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get all priorities
+      tags:
+      - priorities
+  /priority/{tskpr_id}:
+    get:
+      consumes:
+      - application/json
+      description: GetPriority returns a priority by ID
+      parameters:
+      - description: Priority ID
+        in: path
+        name: tskpr_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Tb_Task_priority'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get priority by ID
+      tags:
+      - priorities
   /status:
     get:
       consumes:
       - application/json
-      description: GetStatus returns all status
+      description: GetAllStatus returns all status
       produces:
       - application/json
       responses:
@@ -148,7 +211,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: GetTask returns a status by ID
+      description: GetStatus returns a status by ID
       parameters:
       - description: Status ID
         in: path

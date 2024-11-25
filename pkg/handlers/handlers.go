@@ -437,7 +437,7 @@ func DeleteTask(c *gin.Context) {
 
 // GetStatus godoc
 // @Summary Get status by ID
-// @Description GetTask returns a status by ID
+// @Description GetStatus returns a status by ID
 // @Tags status
 // @Accept  json
 // @Produce  json
@@ -467,7 +467,7 @@ func GetStatus(c *gin.Context) {
 
 // GetAllStatus godoc
 // @Summary Get all status
-// @Description GetStatus returns all status
+// @Description GetAllStatus returns all status
 // @Tags status
 // @Accept  json
 // @Produce  json
@@ -482,4 +482,53 @@ func GetAllStatus(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, allStatus)
+}
+
+// GetPriority godoc
+// @Summary Get priority by ID
+// @Description GetPriority returns a priority by ID
+// @Tags priorities
+// @Accept  json
+// @Produce  json
+// @Param tskpr_id path int true "Priority ID"
+// @Success 200 {object} models.Tb_Task_priority
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 404 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /priority/{tskpr_id} [get]
+func GetPriority(c *gin.Context) {
+	priorityIDParam := c.Param("tskpr_id")
+	priorityRepo := repositories.NewPriorityRepository()
+
+	priorityID, err := strconv.Atoi(priorityIDParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid priority ID"})
+		return
+	}
+
+	priority, err := priorityRepo.Select(priorityID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Internal Server Error"})
+		return
+	}
+	c.JSON(http.StatusOK, priority)
+}
+
+// GetPriorities godoc
+// @Summary Get all priorities
+// @Description GetPriorities returns all priorities
+// @Tags priorities
+// @Accept  json
+// @Produce  json
+// @Success 200 {array} repositories.Task_priority
+// @Failure 500 {object} models.ErrorResponse
+// @Router /priorities [get]
+func GetPriorities(c *gin.Context) {
+	priorityRepo := repositories.NewPriorityRepository()
+	priorities, err := priorityRepo.Select()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Internal Server Error"})
+		return
+	}
+	c.JSON(http.StatusOK, priorities)
 }
