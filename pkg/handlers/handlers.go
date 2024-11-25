@@ -279,7 +279,7 @@ func GetTask(c *gin.Context) {
 	c.JSON(http.StatusOK, task)
 }
 
-// GeTasks godoc
+// GetTasks godoc
 // @Summary Get all task
 // @Description GetTask returns all task
 // @Tags tasks
@@ -287,7 +287,7 @@ func GetTask(c *gin.Context) {
 // @Produce  json
 // @Success 200 {array} repositories.TaskRepository
 // @Failure 500 {object} models.ErrorResponse
-// @Router /task [get]
+// @Router /tasks [get]
 func GetTasks(c *gin.Context) {
 	taskRepo := repositories.NewTaskRepository()
 	tasks, err := taskRepo.Select()
