@@ -17,10 +17,15 @@ type Category struct{}
 type Task_category struct{}
 type Task_status struct{}
 type Task_priority struct{}
+type Tb_Task_category struct{}
 
 // NewTaskRepository cria uma nova instância do repositório de tarefas
 func NewCategoryRepository() *Category {
 	return &Category{}
+}
+
+func NewTaskCategoryRepository() *Tb_Task_category {
+	return &Tb_Task_category{}
 }
 
 func NewTaskRepository() *TaskRepository {
@@ -536,4 +541,133 @@ func (r *Task_priority) Select(Tskpr_id ...int) ([]*models.Tb_Task_priority, err
 
 	log.Printf("Prioridade selecionada com sucesso %v", task_priorities)
 	return task_priorities, nil
+}
+
+func (r *Tb_Task_category) Insert(taskCategory *models.Tb_Task_category) (int, error) {
+	db := database.GetDB()
+
+	query := `INSERT INTO tb_task_category (tsk_id, cat_id) 
+						VALUES ($1, $2) 
+						RETURNING tsk_id`
+
+	var insertedID int
+	err := db.QueryRow(context.Background(), query, 
+			taskCategory.Tsk_id, 
+			taskCategory.Cat_id,
+	).Scan(&insertedID)
+
+	if err != nil {
+			log.Printf("Erro ao inserir categoria de tarefa: %v", err)
+			return 0, err
+	}
+
+	log.Printf("Categoria de tarefa inserida com sucesso, ID: %d", insertedID)
+	return insertedID, nil
+}
+
+func (r *Tb_Task_category) Update(taskCategory *models.Tb_Task_category) (bool, error) {
+	db := database.GetDB()
+
+	query := `UPDATE tb_task_category
+						SET cat_id = $1
+						WHERE tsk_id = $2`
+
+	cmdTag, err := db.Exec(context.Background(), query, 
+			taskCategory.Cat_id, 
+			taskCategory.Tsk_id,
+	)
+	if err != nil {
+			log.Printf("Erro ao atualizar categoria de tarefa: %v", err)
+			return false, err
+	}
+
+	if cmdTag.RowsAffected() == 0 {
+			log.Printf("Nenhuma linha foi atualizada para tsk_id: %d", taskCategory.Tsk_id)
+			return false, nil 
+	}
+
+	log.Printf("Categoria de tarefa atualizada com sucesso para tsk_id: %d", taskCategory.Tsk_id)
+	return true, nil
+}
+
+func (r *Tb_Task_category) Select(Tsk_id []int, Cat_id []int) ([]*models.Tb_Task_category, error) {
+	db := database.GetDB()
+
+	var query string
+	var rows pgx.Rows
+	var err error
+
+	// Se Tsk_id e Cat_id forem ambos vazios, retorna todos os registros
+	if len(Tsk_id) == 0 && len(Cat_id) == 0 {
+			query = `SELECT tsk_id, cat_id FROM tb_task_category`
+			rows, err = db.Query(context.Background(), query)
+	} else {
+			// Caso contrário, construa uma query para filtrar pelos IDs
+			query = `SELECT tsk_id, cat_id FROM tb_task_category WHERE`
+			conditions := []string{}
+			args := []interface{}{}
+			
+			// Adiciona condições para o filtro com base nos parâmetros
+			if len(Tsk_id) > 0 {
+					conditions = append(conditions, "tsk_id = ANY($1)")
+					args = append(args, Tsk_id)
+			}
+			if len(Cat_id) > 0 {
+					conditions = append(conditions, "cat_id = ANY($2)")
+					args = append(args, Cat_id)
+			}
+
+			// Junta as condições com "AND"
+			query += " " + conditions[0]
+			for i := 1; i < len(conditions); i++ {
+					query += " AND " + conditions[i]
+			}
+
+			// Executa a query com os parâmetros
+			rows, err = db.Query(context.Background(), query, args...)
+	}
+
+	if err != nil {
+			log.Printf("Erro ao selecionar categorias de tarefa %v", err)
+			return nil, err
+	}
+
+	defer rows.Close()
+
+	var taskCategories []*models.Tb_Task_category
+
+	for rows.Next() {
+			var taskCategory models.Tb_Task_category
+			err := rows.Scan(
+					&taskCategory.Tsk_id,
+					&taskCategory.Cat_id,
+			)
+			if err != nil {
+					log.Printf("Erro ao escanear categoria de tarefa %v", err)
+					return nil, err
+			}
+			taskCategories = append(taskCategories, &taskCategory)
+	}
+	if err = rows.Err(); err != nil {
+			log.Printf("Erro ao iterar sobre linhas %v", err)
+			return nil, err
+	}
+
+	log.Printf("Categorias de tarefa selecionadas com sucesso %v", taskCategories)
+	return taskCategories, nil
+}
+
+func (r *Tb_Task_category) Delete(tsk_id int) error {
+	db := database.GetDB()
+
+	query := `DELETE FROM tb_task_category WHERE tsk_id = $1`
+	
+	_, err := db.Exec(context.Background(), query, tsk_id)
+	if err != nil {
+		log.Printf("Erro ao deletar a categoria %v", err)
+		return err
+	}
+
+	log.Printf("Categoria de tarefa deletada com sucesso para tsk_id: %d", tsk_id)
+	return nil
 }

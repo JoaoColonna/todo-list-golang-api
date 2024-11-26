@@ -33,6 +33,15 @@ definitions:
       usr_id:
         type: integer
     type: object
+  models.Tb_Category:
+    properties:
+      cat_id:
+        type: integer
+      cat_name:
+        type: string
+      usr_id:
+        type: integer
+    type: object
   models.Tb_Task:
     properties:
       tks_deadline_date:
@@ -54,6 +63,13 @@ definitions:
       tsksk_id:
         type: integer
       usr_id:
+        type: integer
+    type: object
+  models.Tb_Task_category:
+    properties:
+      cat_id:
+        type: integer
+      tsk_id:
         type: integer
     type: object
   models.Tb_Task_priority:
@@ -102,6 +118,160 @@ info:
   title: To-Do List Golang API
   version: "1.0"
 paths:
+  /categories:
+    get:
+      consumes:
+      - application/json
+      description: Get all categoreies from the database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Tb_Category'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get all categories
+      tags:
+      - categories
+  /category:
+    post:
+      consumes:
+      - application/json
+      description: CreateCategory creates a new category in the system
+      parameters:
+      - description: Category data
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/models.Tb_Category'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Tb_Category'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Create a new category
+      tags:
+      - categories
+  /category/{cat_id}:
+    delete:
+      consumes:
+      - application/json
+      description: DeleteCategory deletes a category by its ID from the database
+      parameters:
+      - description: Category ID
+        in: path
+        name: cat_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Tb_Category'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Delete a category by ID
+      tags:
+      - categories
+    get:
+      consumes:
+      - application/json
+      description: Returns the details of a specific category by its ID
+      parameters:
+      - description: Category ID
+        in: path
+        name: cat_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Tb_Category'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get category by ID
+      tags:
+      - categories
+    put:
+      consumes:
+      - application/json
+      description: UpdateCategory updates a category by ID
+      parameters:
+      - description: Category ID
+        in: path
+        name: cat_id
+        required: true
+        type: integer
+      - description: Category data
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/models.Tb_Category'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Tb_Category'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Update a category by ID
+      tags:
+      - categories
   /login:
     post:
       consumes:
@@ -371,6 +541,125 @@ paths:
       summary: Update an existing task
       tags:
       - tasks
+  /taskcategories:
+    get:
+      consumes:
+      - application/json
+      description: Get all task categories from the database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Tb_Task_category'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get all task categories
+      tags:
+      - TaskCategory
+    post:
+      consumes:
+      - application/json
+      description: Create a new task category in the database
+      parameters:
+      - description: Task Category data
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/models.Tb_Task_category'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Tb_Task_category'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Create a new task category
+      tags:
+      - TaskCategory
+  /taskcategory/{tsk_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a task category based on the task ID
+      parameters:
+      - description: Task ID
+        in: query
+        name: tsk_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Tb_Task_category'
+            type: array
+        "400":
+          description: Invalid task ID
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get task category by task ID
+      tags:
+      - TaskCategory
+    put:
+      consumes:
+      - application/json
+      description: Update the category of a task based on the task ID
+      parameters:
+      - description: Task ID
+        in: path
+        name: tsk_id
+        required: true
+        type: integer
+      - description: Task Category Data
+        in: body
+        name: taskCategory
+        required: true
+        schema:
+          $ref: '#/definitions/models.Tb_Task_category'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Tb_Task_category'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Task Category not found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Update task category by task ID
+      tags:
+      - TaskCategory
   /tasks:
     get:
       consumes:

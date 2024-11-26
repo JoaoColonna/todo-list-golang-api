@@ -316,9 +316,9 @@ func CreateTask(c *gin.Context) {
 		return
 	}
 
-	deadlineDate, err := time.Parse("2006-01-02 15:04:05", tb_Task.Tsk_deadline_date);
+	deadlineDate, err := time.Parse("2006-01-02 15:04:05", tb_Task.Tsk_deadline_date)
 
-	if err != nil{
+	if err != nil {
 		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid input"})
 		return
 	}
@@ -338,7 +338,7 @@ func CreateTask(c *gin.Context) {
 
 	var userId int
 
-	userId, err = taskRepo.Insert(&task); 
+	userId, err = taskRepo.Insert(&task)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to create task"})
 		return
@@ -373,15 +373,14 @@ func UpdateTask(c *gin.Context) {
 
 	var task_request models.Task_Request
 
-
 	if err := c.ShouldBindJSON(&task_request); err != nil {
 		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid input"})
 		return
 	}
 
-	deadlineDate, err := time.Parse("2006-01-02 15:04:05", task_request.Tsk_deadline_date);
+	deadlineDate, err := time.Parse("2006-01-02 15:04:05", task_request.Tsk_deadline_date)
 
-	if err != nil{
+	if err != nil {
 		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid input"})
 		return
 	}
@@ -655,10 +654,10 @@ func UpdateCategory(c *gin.Context) {
 		return
 	}
 
-	categoryResponse := models.Category_Response{ 
-		Cat_id: category.Cat_id,
+	categoryResponse := models.Category_Response{
+		Cat_id:   category.Cat_id,
 		Cat_name: category.Cat_name,
-		Usr_id: category.Usr_id,
+		Usr_id:   category.Usr_id,
 	}
 
 	c.JSON(http.StatusOK, categoryResponse)
@@ -689,6 +688,173 @@ func DeleteCategory(c *gin.Context) {
 	err = categoryRepo.Delete(categoryID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Internal Server Error"})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+// GetTaskCategories godoc
+// @Summary Get all task categories
+// @Description Get all task categories from the database
+// @Tags TaskCategory
+// @Accept  json
+// @Produce  json
+// @Success 200 {array} models.Tb_Task_category
+// @Failure 500 {object} models.ErrorResponse
+// @Router /taskcategories [get]
+func GetTaskCategories(c *gin.Context) {
+	taskCategorysRepo := repositories.NewTaskCategoryRepository()
+	taskCategories, err := taskCategorysRepo.Select([]int{}, []int{})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Internal Server Error"})
+		return
+	}
+
+	c.JSON(http.StatusOK, taskCategories)
+}
+
+// GetTaskCategory godoc
+// @Summary Get task category by task ID
+// @Description Get a task category based on the task ID
+// @Tags TaskCategory
+// @Accept  json
+// @Produce  json
+// @Param tsk_id query int true "Task ID"
+// @Success 200 {array} models.Tb_Task_category
+// @Failure 400 {object} models.ErrorResponse "Invalid task ID"
+// @Failure 500 {object} models.ErrorResponse "Internal Server Error"
+// @Router /taskcategory/{tsk_id} [get]
+func GetTaskCategory(c *gin.Context) {
+	taskCategorysRepo := repositories.NewTaskCategoryRepository()
+
+	tsk_id := c.Param("tsk_id")
+
+	tskID, err := strconv.Atoi(tsk_id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid task ID"})
+		return
+	}
+
+	taskCategories, err := taskCategorysRepo.Select([]int{tskID}, nil)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Internal Server Error"})
+		return
+	}
+
+	if len(taskCategories) == 0 {
+		c.JSON(http.StatusNotFound, models.ErrorResponse{Error: "Task Category not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, taskCategories)
+}
+
+// CreateTaskCategory godoc
+// @Summary Create a new task category
+// @Description Create a new task category in the database
+// @Tags TaskCategory
+// @Accept  json
+// @Produce  json
+// @Param category body models.Tb_Task_category true "Task Category data"
+// @Success 201 {object} models.Tb_Task_category
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /taskcategories [post]
+func CreateTaskCategory(c *gin.Context) {
+	taskCategoryRepo := repositories.NewTaskCategoryRepository()
+
+	var newTaskCategory models.Tb_Task_category
+
+	if err := c.ShouldBindJSON(&newTaskCategory); err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid input data"})
+		return
+	}
+
+	insertedID, err := taskCategoryRepo.Insert(&newTaskCategory)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to create task category"})
+		return
+	}
+
+	newTaskCategory.Tsk_id = insertedID
+
+	c.JSON(http.StatusCreated, newTaskCategory)
+}
+
+// UpdateTaskCategory godoc
+// @Summary Update task category by task ID
+// @Description Update the category of a task based on the task ID
+// @Tags TaskCategory
+// @Accept  json
+// @Produce  json
+// @Param tsk_id path int true "Task ID"
+// @Param taskCategory body models.Tb_Task_category true "Task Category Data"
+// @Success 200 {object} models.Tb_Task_category
+// @Failure 400 {object} models.ErrorResponse "Invalid input"
+// @Failure 404 {object} models.ErrorResponse "Task Category not found"
+// @Failure 500 {object} models.ErrorResponse "Internal Server Error"
+// @Router /taskcategory/{tsk_id} [put]
+func UpdateTaskCategory(c *gin.Context) {
+	taskCategorysRepo := repositories.NewTaskCategoryRepository()
+
+	tsk_id := c.Param("tsk_id")
+
+	tskID, err := strconv.Atoi(tsk_id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid task ID"})
+		return
+	}
+
+	var taskCategory models.Tb_Task_category
+
+	if err := c.ShouldBindJSON(&taskCategory); err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid input"})
+		return
+	}
+
+	taskCategory.Tsk_id = tskID
+
+	updated, err := taskCategorysRepo.Update(&taskCategory)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Internal Server Error"})
+		return
+	}
+
+	if !updated {
+		c.JSON(http.StatusNotFound, models.ErrorResponse{Error: "Task Category not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, taskCategory)
+}
+
+// DeleteTaskCategory godoc
+// @Summary Delete a task category by tsk_id
+// @Description Delete a specific task category using the tsk_id
+// @Tags TaskCategory
+// @Accept  json
+// @Produce  json
+// @Param tsk_id path int true "Task Category ID"
+// @Success 204 {object} models.SuccessResponse
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /taskcategory/{tsk_id} [delete]
+func DeleteTaskCategory(c *gin.Context) {
+	taskCategoryIDParam := c.Param("tsk_id")
+	taskCategoryRepo := repositories.NewTaskCategoryRepository()
+
+	taskCategoryID, err := strconv.Atoi(taskCategoryIDParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid category ID"})
+		return
+	}
+
+	err = taskCategoryRepo.Delete(taskCategoryID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Internal Server Error"})
 		return
 	}
 

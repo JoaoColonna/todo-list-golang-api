@@ -46,6 +46,13 @@ func SetupRouter() *gin.Engine {
 	r.PUT("/category/:cat_id", handlers.UpdateCategory)
 	r.DELETE("/category/:cat_id", handlers.DeleteCategory)
 
+	//TaskCategory
+	r.GET("/taskcategory", handlers.GetTaskCategories)
+	r.GET("/taskcategory/:tsk_id", handlers.GetTaskCategory)
+	r.POST("/taskcategory", handlers.CreateTaskCategory)
+	r.PUT("/taskcategory/:tsk_id", handlers.UpdateTaskCategory)
+	r.DELETE("/taskcategory/:tsk_id", handlers.DeleteTaskCategory)
+
 	r.POST("/login", handlers.Login)
 	return r
 }
