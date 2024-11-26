@@ -2,7 +2,7 @@ package routes
 
 import (
 	"golang_api/pkg/handlers"
-	"golang_api/pkg/middlewares"
+	middlewares "golang_api/pkg/middlewares"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
