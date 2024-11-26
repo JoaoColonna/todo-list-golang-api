@@ -39,6 +39,13 @@ func SetupRouter() *gin.Engine {
 	r.GET("/priorities", handlers.GetPriorities)
 	r.GET("/priority/:tskpr_id", handlers.GetPriority)
 
+	//category
+	r.GET("/categories", handlers.GetCategorys)
+	r.GET("/category/:cat_id", handlers.GetCategory)
+	r.POST("/category", handlers.CreateCategory)
+	r.PUT("/category/:cat_id", handlers.UpdateCategory)
+	r.DELETE("/category/:cat_id", handlers.DeleteCategory)
+
 	r.POST("/login", handlers.Login)
 	return r
 }

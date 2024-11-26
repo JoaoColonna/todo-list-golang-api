@@ -50,6 +50,16 @@ type Tb_Category struct {
 	Usr_id   int    `json:"usr_id"`
 }
 
+type Category_DTO struct {
+	Cat_name string `json:"cat_name"`
+	Usr_id int `json:"usr_id"`
+}
+
+type Category_Response struct {
+	Cat_id   int    `json:"cat_id"`
+	Cat_name string `json:"cat_name"`
+	Usr_id   int    `json:"usr_id"`
+}
 type Tb_Task_category struct {
 	Tsk_id int `json:"tsk_id"`
 	Cat_id int `json:"cat_id"`

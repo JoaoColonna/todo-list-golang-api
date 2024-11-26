@@ -532,3 +532,165 @@ func GetPriorities(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, priorities)
 }
+
+// GetCategories godoc
+// @Summary Get all categories
+// @Description Get all categoreies from the database
+// @Tags categories
+// @Accept  json
+// @Produce  json
+// @Success 200 {array} models.Tb_Category
+// @Failure 500 {object} models.ErrorResponse
+// @Router /categories [get]
+func GetCategorys(c *gin.Context) {
+	categorysRepo := repositories.NewCategoryRepository()
+	categorys, err := categorysRepo.Select()
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Internal Server Error"})
+		return
+	}
+	c.JSON(http.StatusOK, categorys)
+}
+
+// GetCategory godoc
+// @Summary      Get category by ID
+// @Description  Returns the details of a specific category by its ID
+// @Tags         categories
+// @Accept       json
+// @Produce      json
+// @Param        cat_id path int true "Category ID"
+// @Success      200 {object} models.Tb_Category
+// @Failure      400 {object} models.ErrorResponse
+// @Failure      404 {object} models.ErrorResponse
+// @Failure      500 {object} models.ErrorResponse
+// @Router       /category/{cat_id} [get]
+func GetCategory(c *gin.Context) {
+	categoryIDParam := c.Param("cat_id")
+	categoryRepo := repositories.NewCategoryRepository()
+
+	categoryID, err := strconv.Atoi(categoryIDParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid category ID"})
+		return
+	}
+
+	category, err := categoryRepo.Select(categoryID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Internal Server Error"})
+		return
+	}
+	c.JSON(http.StatusOK, category)
+}
+
+// CreateCategory godoc
+// @Summary Create a new category
+// @Description CreateCategory creates a new category in the system
+// @Tags categories
+// @Accept  json
+// @Produce  json
+// @Param category body models.Tb_Category true "Category data"
+// @Success 201 {object} models.Tb_Category
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /category [post]
+func CreateCategory(c *gin.Context) {
+	var tb_Category models.Tb_Category
+	if err := c.ShouldBindJSON(&tb_Category); err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid input"})
+		return
+	}
+
+	categoryRepo := repositories.NewCategoryRepository()
+	category := models.Tb_Category{
+		Cat_name: tb_Category.Cat_name,
+		Usr_id:   tb_Category.Usr_id,
+	}
+
+	if err := categoryRepo.Insert(&category); err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to create category"})
+		return
+	}
+	c.JSON(http.StatusCreated, category)
+}
+
+// UpdateCategory godoc
+// @Summary Update a category by ID
+// @Description UpdateCategory updates a category by ID
+// @Tags categories
+// @Accept  json
+// @Produce  json
+// @Param cat_id path int true "Category ID"
+// @Param category body models.Tb_Category true "Category data"
+// @Success 200 {object} models.Tb_Category
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 404 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /category/{cat_id} [put]
+func UpdateCategory(c *gin.Context) {
+	categoryIDParam := c.Param("cat_id")
+	categoryRepo := repositories.NewCategoryRepository()
+
+	categoryID, err := strconv.Atoi(categoryIDParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid category ID"})
+		return
+	}
+
+	var categoryDTO models.Category_DTO
+	if err := c.ShouldBindJSON(&categoryDTO); err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "invalid input"})
+		return
+	}
+
+	category := models.Tb_Category{
+		Cat_id:   categoryID,
+		Cat_name: categoryDTO.Cat_name,
+		Usr_id:   categoryDTO.Usr_id,
+	}
+
+	err = categoryRepo.Update(&category)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Internal Server Error"})
+		return
+	}
+
+	categoryResponse := models.Category_Response{ 
+		Cat_id: category.Cat_id,
+		Cat_name: category.Cat_name,
+		Usr_id: category.Usr_id,
+	}
+
+	c.JSON(http.StatusOK, categoryResponse)
+}
+
+// DeleteCategory godoc
+// @Summary Delete a category by ID
+// @Description DeleteCategory deletes a category by its ID from the database
+// @Tags categories
+// @Accept  json
+// @Produce  json
+// @Param cat_id path int true "Category ID"
+// @Success 200 {object} models.Tb_Category
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 404 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /category/{cat_id} [delete]
+func DeleteCategory(c *gin.Context) {
+	categoryIDParam := c.Param("cat_id")
+	categoryRepo := repositories.NewCategoryRepository()
+
+	categoryID, err := strconv.Atoi(categoryIDParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid category ID"})
+		return
+	}
+
+	err = categoryRepo.Delete(categoryID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Internal Server Error"})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}

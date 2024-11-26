@@ -19,6 +19,10 @@ type Task_status struct{}
 type Task_priority struct{}
 
 // NewTaskRepository cria uma nova instância do repositório de tarefas
+func NewCategoryRepository() *Category {
+	return &Category{}
+}
+
 func NewTaskRepository() *TaskRepository {
 	return &TaskRepository{}
 }
@@ -321,7 +325,7 @@ func (r *Category) Update(category *models.Tb_Category) error {
 	return nil
 }
 
-func (r *Category) Delete(category *models.Tb_Category) error {
+func (r *Category) Delete(cateId ...int) error {
 	db := database.GetDB()
 
 	query := `
@@ -329,17 +333,17 @@ func (r *Category) Delete(category *models.Tb_Category) error {
 		WHERE cat_id =$1
 	`
 
-	_, err := db.Exec(context.Background(), query, category.Cat_id)
+	_, err := db.Exec(context.Background(), query, cateId)
 	if err != nil {
 		log.Printf("Erro ao deletar a categoria %v", err)
 		return err
 	}
 
-	log.Printf("Categoria deletada com sucesso %d\n", category.Cat_id)
+	log.Printf("Categoria deletada com sucesso %d\n", cateId)
 	return nil
 }
 
-func (r *Category) Select(Cat_id int) (*models.Tb_Category, error) {
+func (r *Category) Select(Cat_id ...int) (*models.Tb_Category, error) {
 	db := database.GetDB()
 
 	query := `SELECT cat_id, cat_name, usr_id FROM tb_category WHERE cat_id = $1`
